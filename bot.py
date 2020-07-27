@@ -1,5 +1,4 @@
 import os
-import random
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -7,7 +6,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD = os.getenv('DISCORD_GUILD')
 
 bot = commands.Bot(command_prefix='!')
 
@@ -15,8 +13,13 @@ bot = commands.Bot(command_prefix='!')
 async def on_ready():
   print(f'{bot.user.name} is ready')
 
+@bot.command(name='test', help='Dev testing')
+@commands.is_owner()
+async def test(ctx):
+  print(ctx.message)
 
-@bot.command(name='create-category')
+
+@bot.command(name='create-category', help="Create a channel category.")
 @commands.has_role('admin')
 async def create_category(ctx, category_name):
   guild = ctx.guild
@@ -34,7 +37,7 @@ async def create_category(ctx, category_name):
 
 @bot.command(name='create-channel', help='Create a new channel')
 @commands.has_role('admin')
-async def create_channel(ctx, channel_name, category=''):
+async def create_channel(ctx, channel_name, category='', is_voice=False):
   guild = ctx.guild
   category = category.replace('-',' ').title()
   existing_channel = discord.utils.get(guild.channels, name=channel_name)
@@ -50,14 +53,20 @@ async def create_channel(ctx, channel_name, category=''):
       print(f'Category {category} does not exist...')
       existing_category = await create_category(ctx, category)
       print(f'Creating new channel {channel_name}...')
-      await guild.create_text_channel(channel_name, category=existing_category)
+      if not is_voice:
+        await guild.create_text_channel(channel_name, category=existing_category)
+      else:
+        await guild.create_voice_channel(channel_name, category=existing_category)
       return
 
   print(f'Creating new channel {channel_name}...')
-  await guild.create_text_channel(channel_name)
+  if not is_voice:
+    await guild.create_text_channel(channel_name)
+  else:
+    await guild.create_voice_channel(channel_name)
 
 
-@bot.command(name='create-role')
+@bot.command(name='create-role', help='Create a server role.')
 @commands.has_role('admin')
 async def create_role(ctx, role_name):
   guild = ctx.guild
@@ -74,8 +83,7 @@ async def create_role(ctx, role_name):
 
 @bot.command(name='ping', help='Get your ping latency')
 async def get_ping(ctx):
-  message = ctx.message
-  print(message.created_at)
+  await ctx.send(f'🏓 Pong! {round(bot.latency, 2) * 100}ms')
 
 
 @bot.command(name='purge', help='Delete n number of messages.')
@@ -85,7 +93,7 @@ async def purge(ctx, number):
   number = int(number) + 1  # Converting number to int and adding command message
   async for x in channel.history(limit=number):
     msg.append(x)
-  print('Deleting messages...')
+  print(f'Deleting {len(msg)} messages...')
   await channel.delete_messages(msg)
 
 
@@ -98,77 +106,14 @@ async def roll_dice(ctx, number_of_dice=1, number_of_sides=6):
   await ctx.send(f"🎲 {', '.join(dice)}")
 
 
-@bot.command(name='99', help='Responds with a random quote from Brooklyn 99')
-async def nine_nine(ctx):
-  brookly_99_quotes = [
-    'I\'m the human form of the 💯 emoji.',
-    'Bingpot!',
-    (
-      'Cool. Cool cool cool cool cool cool cool, '
-      'no doubt no doubt no doubt no doubt.'
-    ),
-  ]
-
-  response = random.choice(brookly_99_quotes)
-  await ctx.send(response)
-
+@bot.event
+async def on_command_error(ctx, error):
+  if isinstance(error, commands.CheckFailure):
+    await ctx.send('You do not have the correct role to use this command.')
 
 # @bot.event
 # async def on_message(message):
 #   if message.content == 'ping':
 #     await message.channel.send('pong 🏓')
 
-
-@bot.event
-async def on_command_error(ctx, error):
-  if isinstance(error, commands.CheckFailure):
-    await ctx.send('You do not have the correct role to use this command.')
-
-
 bot.run(TOKEN)
-
-
-# class CustomClient(discord.Client):
-#   async def on_ready(self):
-#     print(f'{self.user} is ready.')
-
-#   async def on_error(self, event, *args, **kwargs):
-#     with open('err.log', 'a') as f:
-#       if event == 'on_message':
-#         f.write(f'Unhandled message: {args[0]}\n')
-#       else:
-#         raise
-
-#   async def on_member_join(self, member):
-#     await member.create_dm()
-#     print(f'{member.user} has joined the server')
-#     await member.dm_channel.send(f'Hello {member.name}, welcome to the server!')
-
-#   async def on_message(self, message):
-#     if message.author == self.user:
-#       return
-
-#     if message.content == '!stop':
-#       print("Loggin out...")
-#       await self.logout()
-#       return
-    
-#     brookly_99_quotes = [
-#       'I\'m the human form of the 💯 emoji.',
-#       'Bingpot!',
-#       (
-#           'Cool. Cool cool cool cool cool cool cool, '
-#           'no doubt no doubt no doubt no doubt.'
-#       ),
-#     ]
-
-#     if message.content == '99!':
-#       response = random.choice(brookly_99_quotes)
-#       print(f'{message.author} triggered a command.')
-#       await message.channel.send(response)
-#     elif message.content == 'raise-exception':
-#       raise discord.DiscordException
-
-
-# client = CustomClient()
-# client.run(TOKEN)
