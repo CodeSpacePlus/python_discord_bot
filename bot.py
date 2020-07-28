@@ -10,13 +10,29 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='!')
 
+
 @bot.event
 async def on_ready():
   print(f'{bot.user.name} is ready')
 
+
+@bot.event
+async def on_command_error(ctx, error):
+  print(error)
+  if isinstance(error, commands.CheckFailure):
+    await ctx.send('You do not have the correct role to use this command.')
+
+
+@bot.event
+async def on_error(event, *args, **kwargs):
+  print(event, args[0])
+
+
 @bot.command(name='test', help='Dev testing')
 @commands.is_owner()
 async def test(ctx):
+  # https://cog-creators.github.io/discord-embed-sandbox/ for future embeding use
+
   embedMes = discord.Embed(title="Title", description="Desc", color=0x00ff00)
   embedMes.add_field(name="field1", value="hi", inline=False)
   embedMes.add_field(name="field2", value="hello", inline=False)
@@ -114,6 +130,15 @@ async def purge(ctx, number):
   await channel.delete_messages(msg)
 
 
+@bot.command(name='kick', help='Kick a member.')
+@commands.has_role('admin')
+async def kick_member(ctx, userName: discord.User, kickReason='Cuz I felt like it.'):
+  guild = ctx.guild
+  print(f'Kicking {userName}...')
+  await guild.kick(user=userName, reason=kickReason)
+  await ctx.send(f'User: {userName} has been kicked. \nReason: {kickReason}')
+
+
 @bot.command(name='roll_dice', help='Simulates rolling dice (rolls a 6 sided dice by defualt).')
 async def roll_dice(ctx, number_of_dice=1, number_of_sides=6):
   dice = [
@@ -122,11 +147,6 @@ async def roll_dice(ctx, number_of_dice=1, number_of_sides=6):
   ]
   await ctx.send(f"🎲 {', '.join(dice)}")
 
-
-@bot.event
-async def on_command_error(ctx, error):
-  if isinstance(error, commands.CheckFailure):
-    await ctx.send('You do not have the correct role to use this command.')
 
 # @bot.event
 # async def on_message(message):
