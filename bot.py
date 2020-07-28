@@ -1,5 +1,6 @@
 import os
 import discord
+from datetime import datetime
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -16,7 +17,11 @@ async def on_ready():
 @bot.command(name='test', help='Dev testing')
 @commands.is_owner()
 async def test(ctx):
-  print(ctx.message)
+  embedMes = discord.Embed(title="Title", description="Desc", color=0x00ff00)
+  embedMes.add_field(name="field1", value="hi", inline=False)
+  embedMes.add_field(name="field2", value="hello", inline=False)
+
+  await ctx.send(embed=embedMes)
 
 
 @bot.command(name='create-category', help="Create a channel category.")
@@ -83,7 +88,19 @@ async def create_role(ctx, role_name):
 
 @bot.command(name='ping', help='Get your ping latency')
 async def get_ping(ctx):
-  await ctx.send(f'🏓 Pong! {round(bot.latency, 2) * 100}ms')
+  # Coming back to this later. Having problems with time difference
+  # message_date = ctx.message.created_at
+  # print(message_date)
+  # current_date = datetime.utcnow().replace(tzinfo=pytz.utc)
+  # print(current_date)
+  # api_time = current_date - message_date
+  # api_time = int(api_time.total_seconds() * 1000)
+  # await ctx.send(f'**🏓 Pong!** \n**Latency**\n {int(bot.latency * 1000)}ms\n**API**\n{api_time}ms')
+
+  embedMes = discord.Embed(title="🏓 Pong!", color=0xff0000)
+  embedMes.add_field(name="API", value=f'{int(bot.latency * 1000)}ms')
+
+  await ctx.send(embed=embedMes)
 
 
 @bot.command(name='purge', help='Delete n number of messages.')
@@ -93,7 +110,7 @@ async def purge(ctx, number):
   number = int(number) + 1  # Converting number to int and adding command message
   async for x in channel.history(limit=number):
     msg.append(x)
-  print(f'Deleting {len(msg)} messages...')
+  print(f'Deleting {len(msg) - 1} messages...')
   await channel.delete_messages(msg)
 
 
