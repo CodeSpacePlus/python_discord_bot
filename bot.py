@@ -120,6 +120,7 @@ async def get_ping(ctx):
 
 
 @bot.command(name='purge', help='Delete n number of messages.')
+@commands.has_role('admin')
 async def purge(ctx, number):
   channel = ctx.channel  # Commad location
   msg = []  # Empty array where list of message will be stored
