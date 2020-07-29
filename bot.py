@@ -102,19 +102,17 @@ async def create_role(ctx, role_name):
   await guild.create_role(name=role_name, mentionable=True)
 
 
+# IMPORTANT NOTE: I have no clue if these are the correct times.
 @bot.command(name='ping', help='Get your ping latency')
 async def get_ping(ctx):
-  # Coming back to this later. Having problems with time difference
-  # message_date = ctx.message.created_at
-  # print(message_date)
-  # current_date = datetime.utcnow().replace(tzinfo=pytz.utc)
-  # print(current_date)
-  # api_time = current_date - message_date
-  # api_time = int(api_time.total_seconds() * 1000)
-  # await ctx.send(f'**🏓 Pong!** \n**Latency**\n {int(bot.latency * 1000)}ms\n**API**\n{api_time}ms')
+  message_date = ctx.message.created_at
+  current_date = datetime.utcnow()
+  api_time = abs(current_date - message_date)
+  api_time = int(api_time.total_seconds() * 1000)
 
   embedMes = discord.Embed(title="🏓 Pong!", color=0xff0000)
-  embedMes.add_field(name="API", value=f'{int(bot.latency * 1000)}ms')
+  embedMes.add_field(name="Latency", value=f'{api_time}ms', inline=False)
+  embedMes.add_field(name="API", value=f'{int(bot.latency * 1000)}ms', inline=False)
 
   await ctx.send(embed=embedMes)
 
