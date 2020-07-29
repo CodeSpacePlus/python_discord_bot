@@ -17,6 +17,12 @@ async def on_ready():
 
 
 @bot.event
+async def on_member_join(member):
+  await member.create_dm()
+  await member.dm_channel.send(f'Hello {member.name}, welcome to the server!')
+
+
+@bot.event
 async def on_command_error(ctx, error):
   print(error)
   if isinstance(error, commands.CheckFailure):
@@ -25,6 +31,7 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_error(event, *args, **kwargs):
+  print('An error occurred')
   print(event, args[0])
 
 
@@ -38,6 +45,12 @@ async def test(ctx):
   embedMes.add_field(name="field2", value="hello", inline=False)
 
   await ctx.send(embed=embedMes)
+
+
+@bot.command(name='logout')
+async def logout_bot(ctx):
+  print('Loggin out...')
+  await bot.logout()
 
 
 @bot.command(name='create-category', help="Create a channel category.")
@@ -136,6 +149,15 @@ async def kick_member(ctx, userName: discord.User, kickReason='Cuz I felt like i
   print(f'Kicking {userName}...')
   await guild.kick(user=userName, reason=kickReason)
   await ctx.send(f'User: {userName} has been kicked. \nReason: {kickReason}')
+
+
+@bot.command(name='ban', help='Ban a member.')
+@commands.has_role('admin')
+async def ban_member(ctx, userName: discord.User, kickReason='Cuz I felt like it.'):
+  guild = ctx.guild
+  print(f'Kicking {userName}...')
+  await guild.ban(user=userName, reason=kickReason)
+  await ctx.send(f'User: {userName} has been banned. \nReason: {kickReason}')
 
 
 @bot.command(name='roll_dice', help='Simulates rolling dice (rolls a 6 sided dice by defualt).')
